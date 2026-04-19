@@ -1,0 +1,7 @@
+django>=4.2
+python-telegram-bot>=20.0
+requests
+python-dotenv
+django-apscheduler
+gunicorn
+whitenoise
