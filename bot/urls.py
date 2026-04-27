@@ -6,4 +6,5 @@ app_name = "bot"
 urlpatterns = [
     path("webhook/", views.telegram_webhook, name="webhook"),
     path("health/", views.health_check, name="health"),
+    path("send-daily/", views.trigger_daily, name="trigger_daily"),
 ]

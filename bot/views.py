@@ -117,3 +117,41 @@ def send_telegram_message(chat_id, text):
 @require_GET
 def health_check(request):
     return JsonResponse({"status": "ok"})
+
+
+@require_GET
+def trigger_daily(request):
+    """Trigger daily shloka send via a secret token. Use with free cron services."""
+    token = request.GET.get("token", "")
+    if token != settings.TELEGRAM_BOT_TOKEN:
+        return JsonResponse({"error": "unauthorized"}, status=403)
+
+    from .services import format_verse_message, next_verse, get_batch_verses
+    from .models import BotState, VerseHistory
+
+    states = BotState.objects.filter(is_active=True)
+    if not states.exists():
+        chat_id = settings.CHAT_ID
+        if chat_id:
+            state, _ = BotState.objects.get_or_create(chat_id=chat_id)
+            states = [state]
+
+    sent_count = 0
+    for state in states:
+        verses = get_batch_verses(state.current_chapter, state.current_verse)
+        for ch, v in verses:
+            msg = format_verse_message(ch, v, state.day_count)
+            if msg:
+                send_telegram_message(state.chat_id, msg)
+                VerseHistory.objects.create(chat_id=state.chat_id, chapter=ch, verse=v)
+                sent_count += 1
+
+        if sent_count > 0:
+            last_ch, last_v = verses[-1]
+            new_ch, new_v = next_verse(last_ch, last_v)
+            state.current_chapter = new_ch
+            state.current_verse = new_v
+            state.day_count += 1
+            state.save()
+
+    return JsonResponse({"status": "ok", "sent": sent_count})

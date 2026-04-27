@@ -2,6 +2,13 @@
 
 A Django-powered Telegram bot that sends you one shloka from Shrimad Bhagavad Gita daily with Hindi & English translations.
 
+<!-- GITA_STATE
+chapter=1
+verse=1
+day=1
+-->
+
+
 ## Features
 - 📖 Daily shloka delivery at 7 AM IST
 - 🇮🇳 Hindi + 🇬🇧 English translations
@@ -51,7 +58,29 @@ python manage.py runbot  # Starts polling mode
 | `/setshlok 2 47` | Set specific verse |
 | `/status` | Current progress |
 
-## 🚀 Hosting Options (Best → Good)
+## 🤖 Free Hosting via GitHub Actions (no server needed)
+
+This repo includes a workflow at `.github/workflows/daily.yml` that runs
+`senddaily_file` once a day. State (current chapter / verse / day) is stored
+in the `GITA_STATE` block at the top of this README and auto-committed back
+after every run, so no database is required.
+
+Setup:
+
+1. Push this repo to GitHub.
+2. Go to **Settings → Secrets and variables → Actions → New repository secret**
+   and add:
+   - `TELEGRAM_BOT_TOKEN`
+   - `CHAT_ID`
+   - `SECRET_KEY` (any random string)
+3. Ensure **Settings → Actions → General → Workflow permissions** is set to
+   **Read and write permissions** (so the workflow can commit README updates).
+4. The workflow runs at `01:30 UTC` (`07:00 IST`) daily and can also be
+   triggered manually from the **Actions** tab.
+
+To reset progress, just edit the `GITA_STATE` block above and commit.
+
+## 🚀 Other Hosting Options (Best → Good)
 
 ### 1. Railway.app (⭐ Recommended)
 - Free tier available, easiest Django hosting
