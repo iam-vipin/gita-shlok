@@ -1,108 +1,63 @@
-# 🙏 Gita Daily Bot — Django + Telegram
+# 🙏 Gita Daily Bot
 
-A Django-powered Telegram bot that sends you one shloka from Shrimad Bhagavad Gita daily with Hindi & English translations.
+A tiny Python script that posts a batch of 5 shlokas from the Shrimad Bhagavad Gita — Sanskrit, Hindi, and English — to a Telegram chat once a day. Hosted for free on GitHub Actions. No server, no database.
 
 <!-- GITA_STATE
 chapter=1
-verse=1
-day=1
+verse=11
+day=3
 -->
 
+## How it works
 
-## Features
-- 📖 Daily shloka delivery at 7 AM IST
-- 🇮🇳 Hindi + 🇬🇧 English translations
-- 📜 Original Sanskrit shloka
-- 🎲 Random verse command
-- 📊 Admin panel to manage subscribers
-- 🔄 Auto-advances through all 700 verses
+- A scheduled [GitHub Actions workflow](.github/workflows/daily.yml) runs [`senddaily.py`](senddaily.py) once a day.
+- The script fetches the next 5 verses from the [Vedic Scriptures API](https://vedicscriptures.github.io/) and posts each to your Telegram chat.
+- The current position (chapter / verse / day) lives in the `GITA_STATE` block at the top of this README. After every run, the workflow commits the advanced position back, so the next run picks up exactly where this one left off.
+- After Chapter 18 finishes (verse 18:78), the bot wraps back to 1:1 and starts the cycle again.
 
 ## Setup
 
-### 1. Create Telegram Bot
-- Open Telegram, search for @BotFather
-- Send `/newbot`, follow prompts
-- Copy the bot token
+1. **Create a Telegram bot.** Message [@BotFather](https://t.me/BotFather) → `/newbot` → copy the token it gives you.
+2. **Get your chat id.** Message [@userinfobot](https://t.me/userinfobot) → `/start` → copy the id it replies with.
+3. **Fork or clone this repo** and push it to your GitHub account.
+4. **Add two repo secrets** (Settings → Secrets and variables → Actions → New repository secret):
+   - `TELEGRAM_BOT_TOKEN`
+   - `CHAT_ID`
+5. **Allow Actions to commit back.** Settings → Actions → General → Workflow permissions → **Read and write permissions** → Save. Without this the workflow can't push the updated state.
+6. **Trigger it once manually** from the Actions tab (run the *Daily Gita Shloka* workflow) to confirm everything works. After that it runs automatically every day.
 
-### 2. Get Your Chat ID
-- Search for @userinfobot on Telegram
-- Send `/start` — it will reply with your chat ID
+## Schedule
 
-### 3. Local Development
+The workflow runs at `01:30 UTC` (= `07:00 IST`) daily. To change it, edit the `cron` line in [`.github/workflows/daily.yml`](.github/workflows/daily.yml). Cron is in UTC; subtract 5h30m to get IST. Test expressions at [crontab.guru](https://crontab.guru/).
+
+> Note: GitHub's scheduled runs are best-effort and may be delayed 5–15 minutes (occasionally more) under load. That's normal.
+
+## Reset or jump to a specific verse
+
+Edit the `GITA_STATE` block at the top of this README and commit:
+
+```html
+<!-- GITA_STATE
+chapter=2
+verse=47
+day=1
+-->
+```
+
+The next run will start from the values you set.
+
+## Run locally
+
 ```bash
-git clone <repo-url>
-cd gita
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env
-# Edit .env with your bot token and chat ID
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runbot  # Starts polling mode
+cp .env.example .env   # then fill in TELEGRAM_BOT_TOKEN and CHAT_ID
+python senddaily.py
 ```
 
-### 4. Daily Scheduling (Local)
-```bash
-# Add to crontab (runs at 7 AM IST daily)
-0 7 * * * cd /path/to/gita && /path/to/venv/bin/python manage.py senddaily
-```
+This will send the next batch and update the README state, just like the workflow does.
 
-## Commands
-| Command | Description |
-|---------|-------------|
-| `/start` | Welcome message |
-| `/today` | Current shloka |
-| `/next` | Next shloka |
-| `/random` | Random shloka |
-| `/setshlok 2 47` | Set specific verse |
-| `/status` | Current progress |
+## Credits
 
-## 🤖 Free Hosting via GitHub Actions (no server needed)
-
-This repo includes a workflow at `.github/workflows/daily.yml` that runs
-`senddaily_file` once a day. State (current chapter / verse / day) is stored
-in the `GITA_STATE` block at the top of this README and auto-committed back
-after every run, so no database is required.
-
-Setup:
-
-1. Push this repo to GitHub.
-2. Go to **Settings → Secrets and variables → Actions → New repository secret**
-   and add:
-   - `TELEGRAM_BOT_TOKEN`
-   - `CHAT_ID`
-   - `SECRET_KEY` (any random string)
-3. Ensure **Settings → Actions → General → Workflow permissions** is set to
-   **Read and write permissions** (so the workflow can commit README updates).
-4. The workflow runs at `01:30 UTC` (`07:00 IST`) daily and can also be
-   triggered manually from the **Actions** tab.
-
-To reset progress, just edit the `GITA_STATE` block above and commit.
-
-## 🚀 Other Hosting Options (Best → Good)
-
-### 1. Railway.app (⭐ Recommended)
-- Free tier available, easiest Django hosting
-- Push to GitHub → connect to Railway → auto deploys
-- Add env vars in dashboard, add cron job for `senddaily`
-- Cost: Free tier or ~$5/month
-
-### 2. Render.com
-- Free tier with auto-deploy from GitHub
-- Add cron job via Render dashboard
-- Cost: Free tier or ~$7/month
-
-### 3. VPS (DigitalOcean/Hetzner)
-- Full control, run bot in polling mode with systemd
-- Use cron for daily scheduling
-- Cost: ~$4-6/month
-
-### 4. PythonAnywhere
-- Free tier supports Django + scheduled tasks
-- Perfect for this use case
-- Cost: Free!
-
-## API
-Uses the free [Bhagavad Gita API](https://bhagavadgita.theaum.org/) by TheAum.org
-# gita-shlok
+Verse content via the [Vedic Scriptures API](https://vedicscriptures.github.io/).
