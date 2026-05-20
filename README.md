@@ -3,9 +3,9 @@
 A tiny Python script that posts a batch of 5 shlokas from the Shrimad Bhagavad Gita — Sanskrit, Hindi, and English — to a Telegram chat once a day. Hosted for free on GitHub Actions. No server, no database.
 
 <!-- GITA_STATE
-chapter=2
-verse=69
-day=24
+chapter=3
+verse=2
+day=25
 -->
 
 ## How it works
