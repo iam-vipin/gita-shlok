@@ -4,8 +4,8 @@ A tiny Python script that posts a batch of 5 shlokas from the Shrimad Bhagavad G
 
 <!-- GITA_STATE
 chapter=16
-verse=15
-day=118
+verse=20
+day=119
 -->
 
 ## How it works
